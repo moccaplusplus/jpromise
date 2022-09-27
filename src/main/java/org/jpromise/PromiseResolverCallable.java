@@ -16,19 +16,21 @@ class PromiseResolverCallable<T> implements PromiseResolver<T>, Callable<T> {
 
     @Override
     public void resolve(T value) {
+        if (latch.getCount() < 1) return;
         this.value = value;
         latch.countDown();
     }
 
     @Override
     public void reject(Exception error) {
+        if (latch.getCount() < 1) return;
         this.error = error;
         latch.countDown();
     }
 
     @Override
     public T call() throws Exception {
-        promiseInit.accept(this);
+        promiseInit.init(this);
         latch.await();
         if (error != null) throw error;
         return value;
